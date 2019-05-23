@@ -1,89 +1,88 @@
 <template>
-    <div>
-        <div class="loading" v-if="isLoading">
-             <img src="../assets/loading.gif" alt="">
-        </div>
-        
-        <div class="post">
-            <ul>
-                <li class="toobar">
-                  <div>
+  <div class="PostList">
+      <!-- 在数据未返回的时候，显示这个正在加载的gif -->
+      <div class="loading" v-if="isLoading">
+        <img src="../assets/loading.gif">
+      </div>
+      <!-- 代表主题列表 -->
+      <div class="post" v-else>
+        <ul>
+            <li class="toobar">
+                <div>
                     <span>全部</span>
                     <span>精华</span>
                     <span>分享</span>
                     <span>问答</span>
                     <span>招聘</span>
-                  </div>
-                </li>
-                <li v-for="post in posts" :key="post">
-                    <img :src="author.avatar_url" alt="">
-                    <span>
-                        <span class="reply_count">{{post.reply_count}}</span>
-                        {{post.visit_count}}
-                        <span :class="[{classify: true,'put-good':(post.good===true),'put-top':(post.top===true),
-                        'other-tab': (post.good !== true && post.top !== true)
-                        }]">
-                            {{post | tabFormatter}}
-                        </span>
-                    </span>
-                    <span>{{post.title}}</span>
-                    <span class="last_reply">{{post.last_reply_at}}</span>
-
-                </li>
-            </ul>   
-        </div>
-        
-    </div>
-    
-    
+                </div>
+            </li>
+          <li  v-for="post in posts" :key="post">
+            <a href="#">
+              <img :src="post.author.avatar_url" alt>
+            </a>
+            <span class="reply-visit-count">
+                <span class="reply-count">{{post.reply_count}}</span>
+                <span class="count-slash">/</span>
+                <span class="visit-count">{{post.visit_count}}</span>
+            </span>
+            <span :class="[{classify: true, 'put-good': (post.good === true), 'put-top': (post.top === true), 
+            'other-tab': (post.good !== true && post.top !== true)}]">
+                {{post | tabFormatter}}
+            </span >
+              
+                <span class="post-title">{{post.title}}</span>
+              
+            <span class="last-reply-at">{{post.last_reply_at | formatDate}}</span>
+          </li>
+          
+        </ul>
+      </div>
+  </div>
 </template>
 
 
 <script>
+
 export default {
-    data(){
-        return{
-            isLoading:false,
-            posts:[]
-        }
+  
+  data() {
+    return {
+      isLoading: false,
+      posts: [],
+      postPage: 1
+    };
+  },
+ 
+  methods: {
+    getData() {
+      this.$http
+        .get("https://cnodejs.org/api/v1/topics", {
+          params: {
+            page: this.postPage,
+            limit: 15
+          }
+        })
+        .then(res => {
+          this.isLoading = false; // 加载成功去除动画
+          this.posts = res.data.data;
+          console.log(res);
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
-    methods:{
-        getData(){
-            this.$http.get('https://cnodejs.org/api/v1/topics ',
-            {
-                page:1,  
-                limit:20
-            }
-            ).then(res=>{
-                this.isLoading=false,
-                this.posts=res.data.data
-
-
-            }).catch(err=>{
-
-            })
-
-        }
-        
-    },
-    beforeMount(){
-        this.isLoading=true,
+    renderList(value){
+        this.postPage = value
         this.getData()
-
     }
-}
+  },
+  beforeMount() {
+    this.isLoading = true; // 在页面加载之前显示加载动画
+    this.getData(); // 在页面加载之前获取数据
+  }
+};
 </script>
-
-
-
-
-
-
 <style scoped>
-
-li{
-    list-style: none;
-}
 .loading {
     width: 50px;
     height: 50px;
@@ -108,6 +107,7 @@ li{
     background-color: #f6f6f6;
     color: #80bd01;
     font-size: 12px;
+    width:100%;
     
 }
 .post > ul > li:first-child  span {
