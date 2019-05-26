@@ -29,8 +29,11 @@
             'other-tab': (post.good !== true && post.top !== true)}]">
                 {{post | tabFormatter}}
             </span >
-              
-                <span class="post-title">{{post.title}}</span>
+
+            <router-link :to="{name:'post_content',params:{id:post.id}}">  
+              <span class="post-title">{{post.title}}</span>
+              </router-link>  <!--点击标题的时候，跳转name为post_content的路由-->
+            
               
             <span class="last-reply-at">{{post.last_reply_at | formatDate}}</span>
           </li>
